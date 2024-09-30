@@ -1,8 +1,8 @@
-import AboutIcon from "../svgs/aboutIcon";
-import LoginIcon from "../svgs/loginIcon";
-import Logo from "../svgs/Logo";
-import NotificationIcon from "../svgs/notificationIcon";
-import SettingsIcon from "../svgs/settingsIcon";
+import AboutIcon from "../../app/svgs/aboutIcon";
+import LoginIcon from "../../app/svgs/loginIcon";
+import Logo from "../../app/svgs/Logo";
+import NotificationIcon from "../../app/svgs/notificationIcon";
+import SettingsIcon from "../../app/svgs/settingsIcon";
 
 const TopBar = () => {
   return (

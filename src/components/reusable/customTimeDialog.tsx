@@ -12,7 +12,10 @@ import {
 } from "@/components/ui/dialog";
 
 import { Settings } from "lucide-react";
-export function CustomTimeDialog({ duration, setDuration }: any) {
+import useTestStore from "../stores/store";
+export function CustomTimeDialog() {
+  const { duration, setDuration } = useTestStore();
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -20,10 +23,10 @@ export function CustomTimeDialog({ duration, setDuration }: any) {
           variant="ghost"
           size="icon"
           className={` hover:text-gray-200 hover:bg-inherit ${
-            duration == 100 &&
-            duration == 60 &&
-            duration == 30 &&
-            duration == 15
+            Number(duration) == 100 &&
+            Number(duration) == 60 &&
+            Number(duration) == 30 &&
+            Number(duration) == 15
               ? "text-gray-400"
               : "text-yellow-500"
           }`}
@@ -34,8 +37,8 @@ export function CustomTimeDialog({ duration, setDuration }: any) {
       </DialogTrigger>
       <DialogContent className="bg-[#2C2E31] border-none rounded-lg shadow-lg max-w-2xl w-full  p-6">
         <DialogHeader className="space-y-4">
-          <DialogTitle className="text-gray-300 text-2xl font-normal">
-            Test duration
+        <DialogTitle className="text-gray-600 text-4xl font-semibold ">
+        Test duration
           </DialogTitle>
           <DialogDescription className="space-y-4">
             <div className="text-gray-400 text-lg">{duration} seconds</div>

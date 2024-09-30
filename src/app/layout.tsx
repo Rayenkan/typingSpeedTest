@@ -4,7 +4,7 @@ import "./globals.css"
 import { Toaster } from "sonner"
 import NextTopLoader from "nextjs-toploader"
 
-import Body from "./components/Body"
+import Body from "../components/reusable/Body"
 
 const poppins = Poppins({
    subsets: ["latin"],
@@ -12,8 +12,8 @@ const poppins = Poppins({
 })
 
 export const metadata: Metadata = {
-   title: "Erpygo CRM",
-   description: "Erpygo Customer Relationship Management",
+   title: "TypeMaster",
+   description: "TypeMaster Typing Speed Test",
 }
 
 export default function RootLayout({

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { CustomTimeDialog } from "./customTimeDialog";
+import useTestStore from "../stores/store";
 
 const TimeSettings = () => {
-  const [duration, setDuration] = useState(60);
+  const { duration, setDuration } = useTestStore();
   return (
     <div className="flex flex-row items-center justify-between space-x-8">
       <p
@@ -39,7 +39,7 @@ const TimeSettings = () => {
       >
         100
       </p>
-      <CustomTimeDialog setDuration={setDuration} Number={Number} />
+      <CustomTimeDialog />
     </div>
   );
 };
