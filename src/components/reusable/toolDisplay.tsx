@@ -7,16 +7,12 @@ import useTestStore from "../stores/store";
 import TestLengthSettings from "./testLengthSettings";
 import { AnimatePresence, motion } from "framer-motion";
 
-const ToolsDisplay = () => {
-  const { testBy } = useTestStore();
 
+const ToolsDisplay = () => {
+  const { testBy  } = useTestStore();
+ 
   return (
-    <motion.div
-      className="relative h-14 w-[50%] rounded-xl flex flex-row items-center justify-center space-x-8 bg-[#2c2e31] text-gray-500"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
+    <motion.div className="relative h-14 w-fit px-4 rounded-xl flex flex-row items-center justify-center space-x-8 bg-[#2c2e31] text-gray-500">
       <TestFilter />
       <VerticalSeperator />
       <TestBy />
@@ -45,7 +41,9 @@ const ToolsDisplay = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      
     </motion.div>
   );
 };
+
 export default ToolsDisplay;
