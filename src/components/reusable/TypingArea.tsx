@@ -1,37 +1,98 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { generateRandomText } from "@/utils/FetchParagraph";
-import { Input } from "../ui/input";
 import useTestStore from "../stores/store";
 import { motion } from "framer-motion";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "../ui/button";
+import { Clock, Zap, Target } from "lucide-react";
 
 const TypingArea = () => {
   const { testBy, filter, duration, length } = useTestStore();
-  let [textLength, setTextLength] = useState(0);
+  const [textLength, setTextLength] = useState(0);
   const [randomText, setRandomText] = useState<string>("");
   const [typedText, setTypedText] = useState<string>("");
   const [startTime, setStartTime] = useState<number | null>(null);
   const [isFinished, setIsFinished] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<number>(duration);
+  const [isDialogOpen, setIsDialogOpen] = useState(false); // Control dialog state
   const inputRef = useRef<HTMLInputElement>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const applyFilters = (text: string) => {
+    let filteredText = text;
+
+    if (!filter.includes("Punctuation")) {
+      filteredText = filteredText.toLowerCase().replace(/[^\w\s]/gi, "");
+    }
+
+    if (!filter.includes("Numbers")) {
+      filteredText = filteredText.replace(/[0-9]/g, "");
+    }
+
+    return filteredText;
+  };
+
   useEffect(() => {
-    const Length = testBy == "word" ? length : 25;
-    setTextLength(Length);
-    setRandomText(generateRandomText(Length));
+    setTimeLeft(duration);
+    const lengthToUse = testBy === "word" ? length : 25;
+
+    const generatedText = generateRandomText(lengthToUse);
+    const filteredText = applyFilters(generatedText);
+    setTextLength(filteredText.length);
+    setRandomText(filteredText);
     inputRef.current?.focus();
-  }, [length, testBy]);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [length, testBy, filter, duration]);
+
+  const startTimer = () => {
+    setStartTime(Date.now());
+    if (testBy == "time") {
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prevTime) => {
+          if (prevTime <= 1) {
+            clearInterval(timerRef.current as NodeJS.Timeout);
+            setIsFinished(true);
+            setIsDialogOpen(true); // Open dialog when test is finished
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000);
+    }
+  };
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
-      if (startTime === null) {
-        setStartTime(Date.now());
+
+      if (!startTime) {
+        startTimer();
       }
-      if (value.length === randomText.length) {
+
+      if (testBy === "word" && value.length === randomText.length) {
         setIsFinished(true);
+        setIsDialogOpen(true); // Open dialog when test is finished
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
       }
+
       setTypedText(value);
     },
-    [randomText, startTime]
+    [randomText, startTime, testBy, startTimer, duration]
   );
 
   const calculateWPM = useCallback(() => {
@@ -48,13 +109,23 @@ const TypingArea = () => {
     return Math.round((correctChars / randomText.length) * 100);
   }, [typedText, randomText]);
 
+  const handleDialogClose = () => {
+    setIsDialogOpen(false); // Close the dialog
+    setTypedText(""); // Reset typed text
+    setIsFinished(false); // Reset finished state
+    setStartTime(null); // Reset start time
+    setTimeLeft(duration);
+    setTextLength(length);
+    setRandomText(generateRandomText(length));
+  };
+
   return (
-    <motion.div
-      className="relative w-[95vw]  p-2 bg-[#323437] rounded-lg mt-24"
-     
-    >
+    <motion.div className="relative w-[95vw] p-2 bg-[#323437] rounded-lg ">
+      {testBy === "time" && !isFinished && (
+        <p className="text-lg text-red-500 mb-4">Time left: {timeLeft}s</p>
+      )}
       <div
-        className="mb-4 text-4xl  font-mono relative"
+        className="mb-4 text-4xl font-mono relative mt-24"
         style={{ lineHeight: "1.6" }}
       >
         <div className="absolute inset-0 pointer-events-none">
@@ -74,28 +145,75 @@ const TypingArea = () => {
           })}
         </div>
         <motion.input
-         key="testLength"
-         initial={{ opacity: 0 }}
-         animate={{ opacity: 1 }}
-         exit={{ opacity: 0 }}
-         transition={{ duration: 0.2 }}
+          key="testLength"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
           ref={inputRef}
           type="text"
           value={typedText}
           onChange={handleInputChange}
           disabled={isFinished}
-          className="w-full bg-transparent text-transparent caret-black focus:outline-none mb-1" // Added mb-1 for margin-bottom
-          style={{ caretColor: "yellow" , caretShape:"bar" , }}
+          className="w-full bg-transparent text-transparent caret-black focus:outline-none mb-1"
+          style={{ caretColor: "yellow", caretShape: "bar" }}
         />
       </div>
-      {isFinished && (
-        <div className="mt-4 text-xl">
-          <p className="text-blue-600">
-            Well done! Your typing speed is {calculateWPM()} WPM.
-          </p>
-          <p className="text-green-600">Accuracy: {calculateAccuracy()}%</p>
-        </div>
-      )}
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="bg-[#2C2E31] border-none rounded-lg shadow-lg max-w-2xl w-full p-6">
+          <DialogHeader className="space-y-4">
+            <DialogTitle className="text-gray-600 text-4xl font-semibold ">
+              Test Results
+            </DialogTitle>
+            <DialogDescription className="space-y-6 p-4">
+              <div className="flex items-center justify-between bg-gray-800 rounded-lg p-4">
+                <Clock className="text-blue-400 w-6 h-6" />
+                {testBy == "time" ? (
+                  <span className="text-gray-200 text-xl font-semibold">
+                    {duration} Seconds{" "}
+                  </span>
+                ) : (
+                  <span className="text-gray-200 text-xl font-semibold">
+                    {length} Words{" "}
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-blue-900 rounded-lg p-4 flex flex-col items-center justify-center">
+                  <Zap className="text-yellow-400 w-8 h-8 mb-2" />
+                  <span className="text-gray-200 text-lg font-semibold">
+                    Speed
+                  </span>
+                  <span className="text-yellow-400 text-2xl font-bold">
+                    {calculateWPM()} WPM
+                  </span>
+                </div>
+                <div className="bg-green-900 rounded-lg p-4 flex flex-col items-center justify-center">
+                  <Target className="text-green-400 w-8 h-8 mb-2" />
+                  <span className="text-gray-200 text-lg font-semibold">
+                    Accuracy
+                  </span>
+                  <span className="text-green-400 text-2xl font-bold">
+                    {calculateAccuracy()}%
+                  </span>
+                </div>
+              </div>
+
+              <DialogClose asChild>
+                <Button
+                  variant="ghost"
+                  className="w-full text-black hover:bg-[#3A3C3F] hover:text-gray-100 bg-yellow-400 transition-colors"
+                  onClick={handleDialogClose} // Close dialog and reset states
+                >
+                  ok
+                </Button>
+              </DialogClose>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };
