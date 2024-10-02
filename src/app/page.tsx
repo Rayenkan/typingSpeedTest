@@ -1,5 +1,5 @@
 import TopBar from "@/components/reusable/topBar"
-import ToolsDisplay from "@/components/reusable/toolDisplay";
+import ToolBar from "@/components/reusable/toolBar";
 import TypingArea from "@/components/reusable/TypingArea";
 
 const Page =()=>{
@@ -7,7 +7,7 @@ const Page =()=>{
   return (
     <div className="h-full w-full flex flex-col items-center">
       <TopBar/>
-      <ToolsDisplay/>
+      <ToolBar/>
       <TypingArea/>
     </div>
   )

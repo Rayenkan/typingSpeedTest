@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
 import { Clock, Zap, Target } from "lucide-react";
+import { ReloadIcon } from "@radix-ui/react-icons";
 
 const TypingArea = () => {
   const { testBy, filter, duration, length } = useTestStore();
@@ -110,25 +111,36 @@ const TypingArea = () => {
   }, [typedText, randomText]);
 
   const handleDialogClose = () => {
-    setIsDialogOpen(false); // Close the dialog
-    setTypedText(""); // Reset typed text
-    setIsFinished(false); // Reset finished state
-    setStartTime(null); // Reset start time
+    setIsDialogOpen(false);
+    setTypedText("");
+    setIsFinished(false);
+    setStartTime(null);
     setTimeLeft(duration);
     setTextLength(length);
     setRandomText(generateRandomText(length));
+    clearInterval(timerRef.current as NodeJS.Timeout);
+    inputRef.current?.focus();
   };
+  useEffect(() => {
+    handleDialogClose();
+  }, [length, testBy, filter, duration]);
 
   return (
-    <motion.div className="relative w-[95vw] p-2 bg-[#323437] rounded-lg ">
+    <motion.div className="relative flex flex-col w-[95vw] p-2 bg-[#323437] rounded-lg ">
+      <div className=" flex justify-center pt-5  ">
+        <ReloadIcon
+          className="h-12 w-12 text-gray-500 hover:text-gray-300 hover:cursor-pointer"
+          onClick={() => handleDialogClose()}
+        />
+      </div>
       {testBy === "time" && !isFinished && (
-        <p className="text-lg text-red-500 mb-4">Time left: {timeLeft}s</p>
+        <p className="text-lg text-yellow-500 ">Time left: {timeLeft}s</p>
       )}
       <div
-        className="mb-4 text-4xl font-mono relative mt-24"
+        className="mb-4 text-4xl font-mono relative mt-16"
         style={{ lineHeight: "1.6" }}
       >
-        <div className="absolute inset-0 pointer-events-none">
+        <div className="relative">
           {randomText.split("").map((char, index) => {
             const typedChar = typedText[index];
             let className = "text-gray-300";
@@ -137,9 +149,22 @@ const TypingArea = () => {
             } else if (typedChar && typedChar !== char) {
               className = "text-red-500";
             }
+
             return (
-              <span key={index} className={`${className}`}>
+              <span key={index} className={`${className} relative`}>
                 {char}
+                {index === typedText.length && (
+                  <motion.span
+                    className="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-500 animate-pulse"
+                    animate={{ opacity: [1, 0, 1] }}
+                    transition={{
+                      duration: 1,
+                      ease: "easeInOut",
+                      repeat: Infinity,
+                      repeatType: "loop",
+                    }}
+                  ></motion.span>
+                )}
               </span>
             );
           })}
@@ -154,9 +179,7 @@ const TypingArea = () => {
           type="text"
           value={typedText}
           onChange={handleInputChange}
-          disabled={isFinished}
-          className="w-full bg-transparent text-transparent caret-black focus:outline-none mb-1"
-          style={{ caretColor: "yellow", caretShape: "bar" }}
+          className="w-full h-fit py-2 bg-transparent text-transparent  focus:outline-none mb-1"
         />
       </div>
 
@@ -205,7 +228,10 @@ const TypingArea = () => {
                 <Button
                   variant="ghost"
                   className="w-full text-black hover:bg-[#3A3C3F] hover:text-gray-100 bg-yellow-400 transition-colors"
-                  onClick={handleDialogClose} // Close dialog and reset states
+                  onClick={handleDialogClose}
+                  onKeyDown={(event) => {
+                    event.preventDefault();
+                  }} // Close dialog and reset states
                 >
                   ok
                 </Button>

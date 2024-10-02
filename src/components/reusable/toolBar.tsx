@@ -8,7 +8,7 @@ import TestLengthSettings from "./testLengthSettings";
 import { AnimatePresence, motion } from "framer-motion";
 
 
-const ToolsDisplay = () => {
+const ToolBar = () => {
   const { testBy  } = useTestStore();
  
   return (
@@ -46,4 +46,4 @@ const ToolsDisplay = () => {
   );
 };
 
-export default ToolsDisplay;
+export default ToolBar;
