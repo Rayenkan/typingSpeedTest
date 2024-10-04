@@ -5,6 +5,7 @@ import { Toaster } from "sonner"
 import NextTopLoader from "nextjs-toploader"
 
 import Body from "../components/reusable/Body"
+import TopBar from "@/components/reusable/topBar"
 
 const poppins = Poppins({
    subsets: ["latin"],
@@ -26,6 +27,7 @@ export default function RootLayout({
          <head></head>
          <Body>
                <NextTopLoader showSpinner={false} />
+               <TopBar/>
                {children}
                <Toaster />
          </Body>

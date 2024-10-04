@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { generateRandomText } from "@/utils/FetchParagraph";
 import useTestStore from "../stores/store";
-import { motion } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
 import {
   Dialog,
   DialogClose,
@@ -26,6 +26,8 @@ const TypingArea = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false); // Control dialog state
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const controls = useAnimation();
 
   const applyFilters = (text: string) => {
     let filteredText = text;
@@ -58,12 +60,22 @@ const TypingArea = () => {
     };
   }, [length, testBy, filter, duration]);
 
-  const startTimer = () => {
+  const startTimer = (e: React.ChangeEvent<HTMLInputElement>)=> {
     setStartTime(Date.now());
     if (testBy == "time") {
+      
+      
+      
       timerRef.current = setInterval(() => {
+        if(randomText.length <= e.target.value.length){
+          console.log("ended")
+          clearInterval(timerRef.current as NodeJS.Timeout);
+          setIsFinished(true);
+          setIsDialogOpen(true); // Open dialog when test is finished
+        }
+      
         setTimeLeft((prevTime) => {
-          if (prevTime <= 1) {
+          if (prevTime <= 1 ) {
             clearInterval(timerRef.current as NodeJS.Timeout);
             setIsFinished(true);
             setIsDialogOpen(true); // Open dialog when test is finished
@@ -80,7 +92,7 @@ const TypingArea = () => {
       const value = e.target.value;
 
       if (!startTime) {
-        startTimer();
+        startTimer(e);
       }
 
       if (testBy === "word" && value.length === randomText.length) {
@@ -96,6 +108,15 @@ const TypingArea = () => {
     [randomText, startTime, testBy, startTimer, duration]
   );
 
+  useEffect(() => {
+    const animateFade = async () => {
+      await controls.set({ opacity: 0, transition: { duration: 0.5 } });
+      await controls.start({ opacity: 1, transition: { duration: 0.5 } });
+    };
+
+    animateFade();
+  }, [testBy, filter, duration, length, randomText, controls]);
+
   const calculateWPM = useCallback(() => {
     if (!startTime) return 0;
     const elapsedTimeInMinutes = (Date.now() - startTime) / 1000 / 60;
@@ -110,7 +131,7 @@ const TypingArea = () => {
     return Math.round((correctChars / randomText.length) * 100);
   }, [typedText, randomText]);
 
-  const handleDialogClose = () => {
+  const handleTestEnd = () => {
     setIsDialogOpen(false);
     setTypedText("");
     setIsFinished(false);
@@ -122,7 +143,7 @@ const TypingArea = () => {
     inputRef.current?.focus();
   };
   useEffect(() => {
-    handleDialogClose();
+    handleTestEnd();
   }, [length, testBy, filter, duration]);
 
   return (
@@ -130,7 +151,7 @@ const TypingArea = () => {
       <div className=" flex justify-center pt-5  ">
         <ReloadIcon
           className="h-12 w-12 text-gray-500 hover:text-gray-300 hover:cursor-pointer"
-          onClick={() => handleDialogClose()}
+          onClick={() => handleTestEnd()}
         />
       </div>
       {testBy === "time" && !isFinished && (
@@ -140,7 +161,7 @@ const TypingArea = () => {
         className="mb-4 text-4xl font-mono relative mt-16"
         style={{ lineHeight: "1.6" }}
       >
-        <div className="relative">
+        <motion.div className="relative" animate={controls}>
           {randomText.split("").map((char, index) => {
             const typedChar = typedText[index];
             let className = "text-gray-300";
@@ -155,7 +176,7 @@ const TypingArea = () => {
                 {char}
                 {index === typedText.length && (
                   <motion.span
-                    className="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-500 animate-pulse"
+                    className="absolute bottom-0 left-0 w-full h-1 rounded-xl bg-yellow-500 animate-pulse"
                     animate={{ opacity: [1, 0, 1] }}
                     transition={{
                       duration: 1,
@@ -168,18 +189,12 @@ const TypingArea = () => {
               </span>
             );
           })}
-        </div>
-        <motion.input
-          key="testLength"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          ref={inputRef}
+        </motion.div>
+        <input
           type="text"
           value={typedText}
           onChange={handleInputChange}
-          className="w-full h-fit py-2 bg-transparent text-transparent  focus:outline-none mb-1"
+          className="w-full h-[40vh] py-2 absolute top-0 text-transparent bg-transparent focus:outline-none mb-1"
         />
       </div>
 
@@ -228,7 +243,7 @@ const TypingArea = () => {
                 <Button
                   variant="ghost"
                   className="w-full text-black hover:bg-[#3A3C3F] hover:text-gray-100 bg-yellow-400 transition-colors"
-                  onClick={handleDialogClose}
+                  onClick={handleTestEnd}
                   onKeyDown={(event) => {
                     event.preventDefault();
                   }} // Close dialog and reset states

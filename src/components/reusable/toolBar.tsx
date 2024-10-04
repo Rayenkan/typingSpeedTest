@@ -12,7 +12,7 @@ const ToolBar = () => {
   const { testBy  } = useTestStore();
  
   return (
-    <motion.div className="relative h-14 w-fit px-4 rounded-xl flex flex-row items-center justify-center space-x-8 bg-[#2c2e31] text-gray-500">
+    <motion.div className="relative h-14 w-fit px-8 rounded-xl flex flex-row items-center justify-center space-x-8 bg-[#2c2e31] text-gray-500">
       <TestFilter />
       <VerticalSeperator />
       <TestBy />
