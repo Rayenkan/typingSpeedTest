@@ -15,10 +15,6 @@ Try the live demo: [TypeMaster Demo](https://6706e9af47288b564aa80a46--typing-sp
 - **Custom Themes:** Dark mode available for comfortable typing sessions.
 - **Leaderboard:** Compare your scores with other users (upcoming feature).
 
-## Screenshots
-
-![Screenshot 1](path-to-screenshot.png)
-![Screenshot 2](path-to-screenshot.png)
 
 ## Getting Started
 
