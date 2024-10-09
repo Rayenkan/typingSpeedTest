@@ -37,7 +37,7 @@ const TopBar = () => {
       <div className="flex items-center justify-center space-x-8 h-full">
         <NotificationIcon />
         {token ? (
-          <div className="flex items-center justify-center flex-row space-x-2">
+          <div className="flex items-center text-gray-500 justify-center flex-row space-x-2">
             <p>Welcome, {username || "Guest"}</p>
             <LoginIcon onClick={handleLoginClick} />
           </div>
