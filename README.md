@@ -13,7 +13,7 @@ Try the live demo: [TypeMaster Demo](https://6706e9af47288b564aa80a46--typing-sp
 - **Real-time Feedback:** Get instant feedback on your typing accuracy and speed.
 - **User Accounts:** Track your progress and scores by logging into your account.
 - **Custom Themes:** Dark mode available for comfortable typing sessions.
-- **Leaderboard:** Compare your scores with other users (upcoming feature).
+- **Leaderboard:** Compare your scores with other users (upcoming feature).(not yet)
 
 
 ## Getting Started
