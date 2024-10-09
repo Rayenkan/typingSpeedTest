@@ -1,4 +1,3 @@
-import TopBar from "@/components/reusable/topBar"
 import ToolBar from "@/components/reusable/toolBar";
 import TypingArea from "@/components/reusable/TypingArea";
 

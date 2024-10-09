@@ -1,4 +1,7 @@
-const LoginIcon = ({ onClick }: any) => {
+type LoginIconProps = {
+  onClick?: () => void; 
+};
+const LoginIcon = ({ onClick }:LoginIconProps) => {
   return (
     <svg
       className="cursor-pointer [&>*]:hover:stroke-gray-300"

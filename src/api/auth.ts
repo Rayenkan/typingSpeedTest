@@ -2,7 +2,9 @@
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { cookies } from "next/headers";
 import { auth, db } from "@/utils/firebase";
-import { doc, setDoc } from "firebase/firestore"; 
+import { doc, setDoc } from "firebase/firestore";
+
+
 
 export const handleSignIn = async (email: string, password: string) => {
   const authInstance = getAuth();
@@ -18,13 +20,18 @@ export const handleSignIn = async (email: string, password: string) => {
     );
     const user = userCredential.user;
     console.log(user);
+
     cookies().set("email", user.email || "");
     cookies().set("token", user.uid || "");
     cookies().set("username", user.displayName || "Anonymous");
 
     return { success: true, message: "Logged in successfully" };
-  } catch (error: any) {
-    return { success: false, message: `Error: ${error.message}` };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { success: false, message: `Error: ${error.message}` };
+    } else {
+      return { success: false, message: "An unknown error occurred." };
+    }
   }
 };
 
@@ -52,12 +59,20 @@ export const handleSignUp = async (
         createdAt: new Date(),
       });
 
+      cookies().set("email", user.email || "");
+      cookies().set("token", user.uid || "");
+      cookies().set("username", username);
+
       return { success: true, message: "Account created successfully!" };
     } else {
       return { success: false, message: "User creation failed." };
     }
-  } catch (error: any) {
-    return { success: false, message: `Error: ${error.message}` };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { success: false, message: `Error: ${error.message}` };
+    } else {
+      return { success: false, message: "An unknown error occurred." };
+    }
   }
 };
 

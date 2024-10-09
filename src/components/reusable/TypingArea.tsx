@@ -17,7 +17,6 @@ import { ReloadIcon } from "@radix-ui/react-icons";
 
 const TypingArea = () => {
   const { testBy, filter, duration, length } = useTestStore();
-  const [textLength, setTextLength] = useState(0);
   const [randomText, setRandomText] = useState<string>("");
   const [typedText, setTypedText] = useState<string>("");
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -49,7 +48,6 @@ const TypingArea = () => {
 
     const generatedText = generateRandomText(lengthToUse);
     const filteredText = applyFilters(generatedText);
-    setTextLength(filteredText.length);
     setRandomText(filteredText);
     inputRef.current?.focus();
 
@@ -137,7 +135,6 @@ const TypingArea = () => {
     setIsFinished(false);
     setStartTime(null);
     setTimeLeft(duration);
-    setTextLength(length);
     setRandomText(generateRandomText(length));
     clearInterval(timerRef.current as NodeJS.Timeout);
     inputRef.current?.focus();

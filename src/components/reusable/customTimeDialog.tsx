@@ -37,8 +37,8 @@ export function CustomTimeDialog() {
       </DialogTrigger>
       <DialogContent className="bg-[#2C2E31] border-none rounded-lg shadow-lg max-w-2xl w-full  p-6">
         <DialogHeader className="space-y-4">
-        <DialogTitle className="text-gray-600 text-4xl font-semibold ">
-        Test duration
+          <DialogTitle className="text-gray-600 text-4xl font-semibold ">
+            Test duration
           </DialogTitle>
           <DialogDescription className="space-y-4">
             <div className="text-gray-400 text-lg">{duration} seconds</div>
@@ -48,12 +48,12 @@ export function CustomTimeDialog() {
               className="bg-[#232527] border-none text-gray-200 placeholder-gray-500 focus:ring-0 h-12"
             />
             <p className="text-gray-400 text-lg">
-              You can use "h" for hours and "m" for minutes, for example
-              "1h30m".
+              You can use &quot; h &quot; for hours and &quot;m&quot; for
+              minutes, for example &quot;1h30m&quot;
             </p>
             <p className="text-gray-400 text-lg">
-              You can start an infinite test by inputting 0. Then, to stop the
-              test, use the Bail Out feature ({" "}
+              You can start an infinite test by inputting 0 Then to stop the
+              test use the Bail Out feature
               <span className="bg-gray-600 text-gray-300 px-1 rounded">
                 esc
               </span>{" "}
@@ -67,7 +67,6 @@ export function CustomTimeDialog() {
               </span>{" "}
               +{" "}
               <span className="bg-gray-600 text-gray-300 px-1 rounded">p</span>{" "}
-              Bail Out)
             </p>
             <DialogClose asChild>
               <Button
