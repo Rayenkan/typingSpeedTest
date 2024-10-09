@@ -1,8 +1,8 @@
-const LoginIcon = () => {
+const LoginIcon = ({ onClick }: any) => {
   return (
     <svg
-    className="cursor-pointer [&>*]:hover:stroke-gray-300"
-
+      className="cursor-pointer [&>*]:hover:stroke-gray-300"
+      onClick={onClick}
       xmlns="http://www.w3.org/2000/svg"
       width="30"
       height="30"
