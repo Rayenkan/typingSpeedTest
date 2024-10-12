@@ -8,16 +8,22 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { ClearCookies } from "@/api/auth";
 import { toast } from "sonner";
+import { useEffect, useState } from "react";
 
 const TopBar = () => {
   const router = useRouter();
-  const username = Cookies.get("username");
-  const token = Cookies.get("token");
+  const [username, setUsername] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUsername(Cookies.get("username") || "Guest");
+    setToken(Cookies.get("token"));
+  }, []);
 
   const handleLoginClick = () => {
     if (token) {
       ClearCookies();
-      toast.success("logged out successfully");
+      toast.success("Logged out successfully");
       router.push("/");
     } else {
       router.push("/login");
@@ -38,13 +44,11 @@ const TopBar = () => {
         <NotificationIcon />
         {token ? (
           <div className="flex items-center text-gray-500 justify-center flex-row space-x-2">
-            <p>Welcome, {username || "Guest"}</p>
+            <p>Welcome, {username}</p>
             <LoginIcon onClick={handleLoginClick} />
           </div>
         ) : (
-          <div>
-            <LoginIcon onClick={handleLoginClick} />
-          </div>
+          <LoginIcon onClick={handleLoginClick} />
         )}
       </div>
     </div>

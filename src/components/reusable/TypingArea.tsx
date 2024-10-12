@@ -1,5 +1,11 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useLayoutEffect,
+} from "react";
 import { generateRandomText } from "@/utils/FetchParagraph";
 import useTestStore from "../stores/store";
 import { motion, useAnimation } from "framer-motion";
@@ -14,7 +20,6 @@ import {
 import { Button } from "../ui/button";
 import { Clock, Zap, Target } from "lucide-react";
 import { ReloadIcon } from "@radix-ui/react-icons";
-
 const TypingArea = () => {
   const { testBy, filter, duration, length } = useTestStore();
   const [randomText, setRandomText] = useState<string>("");
@@ -22,61 +27,62 @@ const TypingArea = () => {
   const [startTime, setStartTime] = useState<number | null>(null);
   const [isFinished, setIsFinished] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number>(duration);
-  const [isDialogOpen, setIsDialogOpen] = useState(false); // Control dialog state
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-
   const controls = useAnimation();
+  useLayoutEffect(() => {
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+      console.log("Input focused");
+    }, 0); // Ensures the DOM is ready before focusing
+
+    return () => clearTimeout(timer); // Cleanup to avoid memory leaks
+  }, [randomText, isDialogOpen]); // Re-focus when text or dialog state changes
+
+  useEffect(() => {
+    const lengthToUse = testBy === "word" ? length : 25;
+    const generatedText = generateRandomText(lengthToUse);
+    setRandomText(applyFilters(generatedText));
+  }, [length, testBy, filter]);
 
   const applyFilters = (text: string) => {
     let filteredText = text;
-
     if (!filter.includes("Punctuation")) {
       filteredText = filteredText.toLowerCase().replace(/[^\w\s]/gi, "");
     }
-
     if (!filter.includes("Numbers")) {
       filteredText = filteredText.replace(/[0-9]/g, "");
     }
-
     return filteredText;
   };
 
-  useEffect(() => {
+  const handleTestEnd = () => {
+    setIsDialogOpen(false);
+    setTypedText("");
+    setIsFinished(false);
+    setStartTime(null);
     setTimeLeft(duration);
     const lengthToUse = testBy === "word" ? length : 25;
-
-    const generatedText = generateRandomText(lengthToUse);
-    const filteredText = applyFilters(generatedText);
-    setRandomText(filteredText);
+    setRandomText(applyFilters(generateRandomText(lengthToUse)));
+    clearInterval(timerRef.current as NodeJS.Timeout);
     inputRef.current?.focus();
+  };
 
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
+  useEffect(() => {
+    handleTestEnd(); // Reset state whenever relevant props change
   }, [length, testBy, filter, duration]);
 
-  const startTimer = (e: React.ChangeEvent<HTMLInputElement>)=> {
-    setStartTime(Date.now());
-    if (testBy == "time") {
-      
-      
-      
+  const startTimer = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!startTime) setStartTime(Date.now());
+
+    if (testBy === "time") {
       timerRef.current = setInterval(() => {
-        if(randomText.length <= e.target.value.length){
-          console.log("ended")
-          clearInterval(timerRef.current as NodeJS.Timeout);
-          setIsFinished(true);
-          setIsDialogOpen(true); // Open dialog when test is finished
-        }
-      
         setTimeLeft((prevTime) => {
-          if (prevTime <= 1 ) {
+          if (prevTime <= 1 || e.target.value.length >= randomText.length) {
             clearInterval(timerRef.current as NodeJS.Timeout);
             setIsFinished(true);
-            setIsDialogOpen(true); // Open dialog when test is finished
+            setIsDialogOpen(true);
             return 0;
           }
           return prevTime - 1;
@@ -88,32 +94,18 @@ const TypingArea = () => {
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
+      if (!startTime) startTimer(e);
 
-      if (!startTime) {
-        startTimer(e);
-      }
+      setTypedText(value);
 
       if (testBy === "word" && value.length === randomText.length) {
         setIsFinished(true);
-        setIsDialogOpen(true); // Open dialog when test is finished
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-        }
+        setIsDialogOpen(true);
+        clearInterval(timerRef.current as NodeJS.Timeout);
       }
-
-      setTypedText(value);
     },
-    [randomText, startTime, testBy, startTimer, duration]
+    [randomText, startTime, testBy]
   );
-
-  useEffect(() => {
-    const animateFade = async () => {
-      await controls.set({ opacity: 0, transition: { duration: 0.5 } });
-      await controls.start({ opacity: 1, transition: { duration: 0.5 } });
-    };
-
-    animateFade();
-  }, [testBy, filter, duration, length, randomText, controls]);
 
   const calculateWPM = useCallback(() => {
     if (!startTime) return 0;
@@ -123,75 +115,51 @@ const TypingArea = () => {
   }, [startTime, typedText]);
 
   const calculateAccuracy = useCallback(() => {
-    const correctChars = typedText
-      .split("")
-      .filter((char, index) => char === randomText[index]).length;
-    return Math.round((correctChars / randomText.length) * 100);
+    const correctChars = typedText.split("").reduce((acc, char, idx) => {
+      return char === randomText[idx] ? acc + 1 : acc;
+    }, 0);
+    return typedText.length > 0
+      ? Math.round((correctChars / typedText.length) * 100)
+      : 100;
   }, [typedText, randomText]);
 
-  const handleTestEnd = () => {
-    setIsDialogOpen(false);
-    setTypedText("");
-    setIsFinished(false);
-    setStartTime(null);
-    setTimeLeft(duration);
-    setRandomText(generateRandomText(length));
-    clearInterval(timerRef.current as NodeJS.Timeout);
-    inputRef.current?.focus();
-  };
-  useEffect(() => {
-    handleTestEnd();
-  }, [length, testBy, filter, duration]);
-
   return (
-    <motion.div className="relative flex flex-col w-[95vw] p-2 bg-[#323437] rounded-lg ">
-      <div className=" flex justify-center pt-5  ">
+    <motion.div className="relative flex flex-col w-[95vw] p-2 bg-[#323437] rounded-lg">
+      <div className="flex justify-center pt-5">
         <ReloadIcon
-          className="h-12 w-12 text-gray-500 hover:text-gray-300 hover:cursor-pointer"
-          onClick={() => handleTestEnd()}
+          className="h-12 w-12 text-gray-500 hover:text-gray-300 cursor-pointer"
+          onClick={handleTestEnd}
         />
       </div>
       {testBy === "time" && !isFinished && (
-        <p className="text-lg text-yellow-500 ">Time left: {timeLeft}s</p>
+        <p className="text-lg text-yellow-500">Time left: {timeLeft}s</p>
       )}
       <div
-        className="mb-4 text-4xl font-mono relative mt-16"
+        className="mb-4 text-4xl font-mono mt-16"
         style={{ lineHeight: "1.6" }}
       >
-        <motion.div className="relative" animate={controls}>
-          {randomText.split("").map((char, index) => {
-            const typedChar = typedText[index];
-            let className = "text-gray-300";
-            if (typedChar === char) {
-              className = "text-green-500";
-            } else if (typedChar && typedChar !== char) {
-              className = "text-red-500";
-            }
-
-            return (
-              <span key={index} className={`${className} relative`}>
-                {char}
-                {index === typedText.length && (
-                  <motion.span
-                    className="absolute bottom-0 left-0 w-full h-1 rounded-xl bg-yellow-500 animate-pulse"
-                    animate={{ opacity: [1, 0, 1] }}
-                    transition={{
-                      duration: 1,
-                      ease: "easeInOut",
-                      repeat: Infinity,
-                      repeatType: "loop",
-                    }}
-                  ></motion.span>
-                )}
-              </span>
-            );
-          })}
+        <motion.div animate={controls}>
+          {randomText.split("").map((char, index) => (
+            <span
+              key={index}
+              className={
+                typedText[index] === char
+                  ? "text-green-500"
+                  : typedText[index]
+                  ? "text-red-500"
+                  : "text-gray-300"
+              }
+            >
+              {char}
+            </span>
+          ))}
         </motion.div>
         <input
+          ref={inputRef}
           type="text"
           value={typedText}
           onChange={handleInputChange}
-          className="w-full h-[40vh] py-2 absolute top-0 text-transparent bg-transparent focus:outline-none mb-1"
+          className="w-full h-[40vh] text-transparent bg-transparent absolute top-20 focus:outline-none z-10"
         />
       </div>
 
@@ -243,7 +211,7 @@ const TypingArea = () => {
                   onClick={handleTestEnd}
                   onKeyDown={(event) => {
                     event.preventDefault();
-                  }} // Close dialog and reset states
+                  }}
                 >
                   ok
                 </Button>
