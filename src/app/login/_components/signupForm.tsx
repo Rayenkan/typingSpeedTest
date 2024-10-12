@@ -6,8 +6,11 @@ import { Button } from "@/components/ui/button";
 import LoginIcon from "@/app/svgs/loginIcon";
 import { handleSignUp } from "@/api/auth";
 import { toast } from "sonner";
+import useRouteState from "@/components/customHooks/useChangeRoutes";
 
 export function SignupForm() {
+  const { pushRoute } = useRouteState()
+
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,6 +49,8 @@ export function SignupForm() {
 
     if (response.success) {
       toast.success(response.message);
+      pushRoute("/")
+
     } else {
       toast.error(response.message);
     }
