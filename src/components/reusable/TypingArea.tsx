@@ -35,10 +35,10 @@ const TypingArea = () => {
     const timer = setTimeout(() => {
       inputRef.current?.focus();
       console.log("Input focused");
-    }, 0); // Ensures the DOM is ready before focusing
+    }, 0); 
 
-    return () => clearTimeout(timer); // Cleanup to avoid memory leaks
-  }, [randomText, isDialogOpen]); // Re-focus when text or dialog state changes
+    return () => clearTimeout(timer); 
+  }, [randomText, isDialogOpen]); 
 
   useEffect(() => {
     const lengthToUse = testBy === "word" ? length : 25;
@@ -124,42 +124,60 @@ const TypingArea = () => {
   }, [typedText, randomText]);
 
   return (
-    <motion.div className="relative flex flex-col w-[95vw] p-2 bg-[#323437] rounded-lg">
-      <div className="flex justify-center pt-5">
+    <motion.div className="relative flex flex-col w-[95vw] p-2 bg-[#323437] rounded-lg ">
+      <div className=" flex justify-center pt-5  ">
         <ReloadIcon
-          className="h-12 w-12 text-gray-500 hover:text-gray-300 cursor-pointer"
-          onClick={handleTestEnd}
+          className="h-12 w-12 text-gray-500 hover:text-gray-300 hover:cursor-pointer"
+          onClick={() => handleTestEnd()}
         />
       </div>
       {testBy === "time" && !isFinished && (
-        <p className="text-lg text-yellow-500">Time left: {timeLeft}s</p>
+        <p className="text-lg text-yellow-500 ">Time left: {timeLeft}s</p>
       )}
       <div
-        className="mb-4 text-4xl font-mono mt-16"
+        className="mb-4 text-4xl font-mono relative mt-16"
         style={{ lineHeight: "1.6" }}
       >
-        <motion.div animate={controls}>
-          {randomText.split("").map((char, index) => (
-            <span
-              key={index}
-              className={
-                typedText[index] === char
-                  ? "text-green-500"
-                  : typedText[index]
-                  ? "text-red-500"
-                  : "text-gray-300"
-              }
-            >
-              {char}
-            </span>
-          ))}
-        </motion.div>
-        <input
+        <div className="relative">
+          {randomText.split("").map((char, index) => {
+            const typedChar = typedText[index];
+            let className = "text-gray-300";
+            if (typedChar === char) {
+              className = "text-green-500";
+            } else if (typedChar && typedChar !== char) {
+              className = "text-red-500";
+            }
+
+            return (
+              <span key={index} className={`${className} relative`}>
+                {char}
+                {index === typedText.length && (
+                  <motion.span
+                    className="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-500 animate-pulse"
+                    animate={{ opacity: [1, 0, 1] }}
+                    transition={{
+                      duration: 1,
+                      ease: "easeInOut",
+                      repeat: Infinity,
+                      repeatType: "loop",
+                    }}
+                  ></motion.span>
+                )}
+              </span>
+            );
+          })}
+        </div>
+        <motion.input
+          key="testLength"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
           ref={inputRef}
           type="text"
           value={typedText}
           onChange={handleInputChange}
-          className="w-full h-[40vh] text-transparent bg-transparent absolute top-20 focus:outline-none z-10"
+          className="w-full h-fit py-2 bg-transparent text-transparent  focus:outline-none mb-1"
         />
       </div>
 
