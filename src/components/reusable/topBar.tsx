@@ -14,15 +14,15 @@ const TopBar = () => {
   const router = useRouter();
   const [username, setUsername] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
-
+  
   useEffect(() => {
     setUsername(Cookies.get("username") || "Guest");
     setToken(Cookies.get("token"));
-  }, []);
-
+  }, [Cookies.get("token")]);
   const handleLoginClick = () => {
     if (token) {
       ClearCookies();
+      console.log(token)
       toast.success("Logged out successfully");
       router.push("/");
     } else {

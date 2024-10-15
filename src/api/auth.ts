@@ -20,7 +20,6 @@ export const handleSignIn = async (email: string, password: string) => {
     );
     const user = userCredential.user;
     console.log(user);
-
     cookies().set("email", user.email || "");
     cookies().set("token", user.uid || "");
     cookies().set("username", user.displayName || "Anonymous");
@@ -47,6 +46,7 @@ export const handleSignUp = async (
   try {
     const response = await auth.createUserWithEmailAndPassword(email, password);
     const user = response.user;
+    console.log(user);
 
     if (user) {
       await user.updateProfile({
@@ -77,7 +77,8 @@ export const handleSignUp = async (
 };
 
 export const ClearCookies = () => {
-  cookies().set("email", "");
-  cookies().set("token", "");
-  cookies().set("username", "");
+  cookies().delete("email")
+  cookies().delete("token")
+  cookies().delete("username")
+
 };
