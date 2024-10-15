@@ -177,7 +177,7 @@ const TypingArea = () => {
           type="text"
           value={typedText}
           onChange={handleInputChange}
-          className="w-full h-fit py-2 bg-transparent text-transparent  focus:outline-none mb-1"
+          className="w-full h-[40vh] py-2 bg-white text-transparent absolute top-0  focus:outline-none mb-1"
         />
       </div>
 
